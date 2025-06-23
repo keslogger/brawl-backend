@@ -1,0 +1,18 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  postgres:
+    image: postgres:13
+    container_name: brawl_db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=brawl_draft_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
