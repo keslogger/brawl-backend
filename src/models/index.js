@@ -7,7 +7,7 @@ const User = require('./User');
 const Equipe = require('./Equipe');
 const Jogador = require('./Jogador');
 const Escolha = require('./Escolha');
-const SessaoDraft = require('./sessaoDraft');
+const SessaoDraft = require('./SessaoDraft');
 const AuditLog = require('./AuditLog');
 
 // ---- Associações Centralizadas ----
@@ -28,7 +28,12 @@ Escolha.belongsTo(Equipe, { foreignKey: 'equipeId' });
 User.hasMany(AuditLog, { foreignKey: 'userId' });
 AuditLog.belongsTo(User, { foreignKey: 'userId' });
 
-// Agrupa a instância do Sequelize e todos os modelos em um único objeto 'db'
+// --- NOVAS ASSOCIAÇÕES ---
+// Relação SessaoDraft <-> Equipes (Azul e Vermelha)
+SessaoDraft.belongsTo(Equipe, { as: 'EquipeAzul', foreignKey: 'equipeAzulId' });
+SessaoDraft.belongsTo(Equipe, { as: 'EquipeVermelha', foreignKey: 'equipeVermelhaId' });
+
+// Agrupa a instância do Sequelize e todos os modelos num único objeto 'db'
 const db = {
   sequelize,
   User,

@@ -1,14 +1,21 @@
+// src/models/SessaoDraft.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 const SessaoDraft = sequelize.define('SessaoDraft', {
   status: {
-    type: DataTypes.ENUM('pendente', 'em_andamento', 'finalizado', 'cancelado'),
-    defaultValue: 'pendente',
+    // Agora o status inicial será definido pela lógica do nosso controller
+    type: DataTypes.ENUM('pendente', 'ban_em_andamento', 'pick_em_andamento', 'finalizado', 'cancelado'),
     allowNull: false
   },
-  // Poderíamos adicionar mais campos no futuro, como rodada atual,
-  // de quem é a vez, etc. Por enquanto, o status é o suficiente.
+  equipeAzulId: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  equipeVermelhaId: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  }
 });
 
 module.exports = SessaoDraft;

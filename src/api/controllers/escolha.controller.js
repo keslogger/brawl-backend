@@ -1,43 +1,61 @@
 // src/api/controllers/escolha.controller.js
 
-// Importamos TODOS os modelos que vamos usar na mesma linha
-const { Escolha, SessaoDraft, Equipe } = require('../../models');
+const { Escolha, SessaoDraft } = require('../../models');
 
-// Registra uma nova escolha de draft em uma sessão específica
 exports.criarEscolha = async (req, res) => {
   try {
-    const { personagemEscolhido, modoDeJogo, mapa, equipeId, sessaoDraftId } = req.body;
+    // Agora o corpo só precisa do personagem e da sessão. O tipo será sempre 'pick'.
+    const { personagemEscolhido, equipeId, sessaoDraftId } = req.body;
 
-    // Verifica se a sessão de draft existe antes de continuar
-    const sessao = await SessaoDraft.findByPk(sessaoDraftId);
+    const sessao = await SessaoDraft.findByPk(sessaoDraftId, {
+      // O include agora busca apenas as escolhas do tipo 'pick' para contar os turnos
+      include: [{ model: Escolha, where: { tipo: 'pick' }, required: false }]
+    });
+
     if (!sessao) {
       return res.status(404).json({ error: 'Sessão de draft não encontrada' });
     }
-
-    // Bônus: Vamos também verificar se a equipe existe
-    const equipe = await Equipe.findByPk(equipeId);
-    if (!equipe) {
-        return res.status(404).json({ error: 'Equipe não encontrada' });
+    
+    // Validação da fase de picks
+    if (sessao.status !== 'pick_em_andamento') {
+      return res.status(403).json({ error: 'Ação não permitida. A fase de picks não está ativa.' });
     }
 
+    const picks = sessao.Escolhas;
+    if (picks.length >= 6) {
+      return res.status(403).json({ error: 'Fase de picks já concluída.' });
+    }
+
+    // Lógica de Turnos (A, B, B, A, A, B)
+    const ordemDePicks = [
+      sessao.equipeAzulId, sessao.equipeVermelhaId, sessao.equipeVermelhaId,
+      sessao.equipeAzulId, sessao.equipeAzulId, sessao.equipeVermelhaId
+    ];
+    const idEquipaDaVez = ordemDePicks[picks.length];
+
+    if (equipeId !== idEquipaDaVez) {
+      return res.status(403).json({ error: `Ação não permitida. É a vez da equipa com ID ${idEquipaDaVez}.` });
+    }
+
+    // Cria a escolha do tipo 'pick'
     const novaEscolha = await Escolha.create({
       personagemEscolhido,
-      modoDeJogo,
-      mapa,
+      tipo: 'pick', // O tipo é sempre 'pick'
       equipeId,
-      sessaoDraftId, // Associa a escolha à sessão
+      sessaoDraftId,
     });
 
-    // ---- LÓGICA DO SOCKET.IO ----
-    // Emite um evento chamado 'nova_escolha' para todos os clientes conectados,
-    // enviando os dados da escolha que acabou de ser criada.
-    req.io.emit('nova_escolha', novaEscolha);
-    // -----------------------------
+    // Se for o último pick, finaliza o draft
+    if ((picks.length + 1) === 6) {
+      sessao.status = 'finalizado';
+      await sessao.save();
+      req.io.emit('status_sessao_alterado', sessao);
+    }
 
+    req.io.emit('nova_escolha', novaEscolha);
     res.status(201).json(novaEscolha);
+
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao registrar escolha: ' + error.message });
+    res.status(400).json({ error: 'Erro ao registar pick: ' + error.message });
   }
 };
-
-// Se você tiver outras funções neste arquivo (como listarEscolhas), elas viriam aqui

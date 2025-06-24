@@ -51,5 +51,6 @@ router.get('/equipes/:id', equipeController.buscarEquipePorId);
 router.put('/equipes/:id', authMiddleware, equipeController.atualizarEquipe);
 router.delete('/equipes/:id', authMiddleware, equipeController.deletarEquipe);
 router.post('/equipes/:id/jogadores', authMiddleware, equipeController.adicionarJogador);
+router.delete('/equipes/:equipeId/jogadores/:jogadorId', authMiddleware, equipeController.removerJogador);
 
 module.exports = router;
