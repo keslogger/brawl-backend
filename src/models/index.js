@@ -9,6 +9,8 @@ const Jogador = require('./Jogador');
 const Escolha = require('./Escolha');
 const SessaoDraft = require('./SessaoDraft');
 const AuditLog = require('./AuditLog');
+const ModoDeJogo = require('./modoDeJogo');
+const Mapa = require('./Mapa'); 
 
 // ---- Associações Centralizadas ----
 
@@ -41,7 +43,9 @@ const db = {
   Jogador,
   Escolha,
   SessaoDraft,
-  AuditLog
+  AuditLog,
+  ModoDeJogo,
+  Mapa,  
 };
 
 module.exports = db;
