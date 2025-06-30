@@ -103,8 +103,10 @@ async function startServer() {
     await db.sequelize.sync({ alter: true });
     console.log('Tabelas e relacionamentos sincronizados com o banco de dados.');
     
-    server.listen(PORT, () => {
-      console.log(`Servidor rodando na porta ${PORT}. Acesse em http://localhost:${PORT}`);
+    // --- CORREÇÃO AQUI ---
+    // Adicionamos '0.0.0.0' para que o servidor aceite conexões externas dentro da rede da Fly.io
+    server.listen(PORT, '0.0.0.0', () => {
+      console.log(`Servidor rodando na porta ${PORT} e escutando em todas as interfaces de rede.`);
     });
   } catch (error) {
     console.error('Não foi possível conectar ao banco de dados:', error);
