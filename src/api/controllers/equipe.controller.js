@@ -1,5 +1,3 @@
-// src/api/controllers/equipe.controller.js
-
 const { Equipe, Jogador } = require('../../models');
 const auditService = require('../../services/audit.service');
 
@@ -88,9 +86,9 @@ exports.adicionarJogador = async (req, res) => {
       return res.status(404).json({ error: 'Jogador não encontrado' });
     }
     await equipe.addJogador(jogador);
-    res.status(200).json({ message: `Jogador ${jogador.nome} adicionado à equipe ${equipe.nome}` });
+    res.status(200).json({ message: `Jogador ${jogador.nome} adicionado a equipe ${equipe.nome}` });
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao adicionar jogador à equipe: ' + error.message });
+    res.status(400).json({ error: 'Erro ao adicionar jogador a equipe: ' + error.message });
   }
 };
 

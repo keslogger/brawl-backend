@@ -1,4 +1,3 @@
-// src/models/Equipe.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 

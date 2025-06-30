@@ -1,4 +1,3 @@
-// src/services/audit.service.js
 const { AuditLog } = require('../models');
 
 const logAction = async (userId, action, details = {}) => {

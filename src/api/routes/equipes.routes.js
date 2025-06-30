@@ -1,4 +1,3 @@
-// src/api/routes/equipes.routes.js
 const express = require('express');
 const router = express.Router();
 const equipeController = require('../controllers/equipe.controller');

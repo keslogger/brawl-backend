@@ -1,12 +1,18 @@
-// src/config/database.js
 const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
-// Configurações da conexão com o banco de dados PostgreSQL
-// ATENÇÃO: Use variáveis de ambiente em um projeto real por segurança!
-const sequelize = new Sequelize('brawl_draft_db', 'postgres', 'docker', {
-  host: 'localhost',
+const isProduction = process.env.NODE_ENV === 'production';
+
+// A Render fornece a URL de conexão na variável de ambiente DATABASE_URL
+const connectionString = process.env.DATABASE_URL;
+
+const sequelize = new Sequelize(connectionString, {
   dialect: 'postgres',
-  logging: console.log, // Mostra os comandos SQL no console
+  // Esta configuração é CRUCIAL para o deploy na Render
+  dialectOptions: {
+    ssl: isProduction ? { require: true, rejectUnauthorized: false } : false
+  },
+  logging: false // Desativamos os logs do SQL em produção
 });
 
 module.exports = sequelize;

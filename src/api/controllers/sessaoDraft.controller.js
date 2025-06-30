@@ -1,4 +1,3 @@
-// src/api/controllers/sessaoDraft.controller.js
 const { SessaoDraft, Escolha, Equipe } = require('../../models');
 const auditService = require('../../services/audit.service');
 
@@ -7,10 +6,10 @@ exports.criarSessao = async (req, res) => {
   try {
     const { equipeAzulId, equipeVermelhaId } = req.body;
     if (!equipeAzulId || !equipeVermelhaId) {
-      return res.status(400).json({ error: 'É necessário fornecer os IDs das duas equipas.' });
+      return res.status(400).json({ error: 'É necessário fornecer os IDs das duas equipes.' });
     }
     if (equipeAzulId === equipeVermelhaId) {
-      return res.status(400).json({ error: 'As equipas devem ser diferentes.' });
+      return res.status(400).json({ error: 'As equipes devem ser diferentes.' });
     }
     const novaSessao = await SessaoDraft.create({
       equipeAzulId,
@@ -97,7 +96,7 @@ exports.registrarBans = async (req, res) => {
     const { bansEquipeAzul, bansEquipeVermelha } = req.body;
 
     if (!bansEquipeAzul || !bansEquipeVermelha || bansEquipeAzul.length !== 3 || bansEquipeVermelha.length !== 3) {
-      return res.status(400).json({ error: 'É necessário fornecer 3 bans para cada equipa.' });
+      return res.status(400).json({ error: 'É necessário fornecer 3 bans para cada equipe.' });
     }
 
     const sessao = await SessaoDraft.findByPk(sessaoDraftId);
@@ -129,11 +128,11 @@ exports.registrarBans = async (req, res) => {
     await sessao.save();
 
     req.io.emit('status_sessao_alterado', sessao);
-    req.io.emit('bans_registados', bansParaCriar);
+    req.io.emit('bans_registrados', bansParaCriar);
 
-    res.status(201).json({ message: 'Todos os 6 bans foram registados com sucesso. Fase de picks iniciada.' });
+    res.status(201).json({ message: 'Todos os 6 bans foram registrados com sucesso. Fase de picks iniciada.' });
 
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao registar bans: ' + error.message });
+    res.status(400).json({ error: 'Erro ao registrar bans: ' + error.message });
   }
 };

@@ -1,4 +1,3 @@
-// src/api/routes/jogadores.routes.js
 const express = require('express');
 const router = express.Router();
 const jogadorController = require('../controllers/jogador.controller');

@@ -1,5 +1,3 @@
-// src/api/controllers/escolha.controller.js
-
 const { Escolha, SessaoDraft } = require('../../models');
 
 exports.criarEscolha = async (req, res) => {
@@ -34,7 +32,7 @@ exports.criarEscolha = async (req, res) => {
     const idEquipaDaVez = ordemDePicks[picks.length];
 
     if (equipeId !== idEquipaDaVez) {
-      return res.status(403).json({ error: `Ação não permitida. É a vez da equipa com ID ${idEquipaDaVez}.` });
+      return res.status(403).json({ error: `Ação não permitida. É a vez da equipe com ID ${idEquipaDaVez}.` });
     }
 
     // Cria a escolha do tipo 'pick'
@@ -56,6 +54,6 @@ exports.criarEscolha = async (req, res) => {
     res.status(201).json(novaEscolha);
 
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao registar pick: ' + error.message });
+    res.status(400).json({ error: 'Erro ao registrar pick: ' + error.message });
   }
 };

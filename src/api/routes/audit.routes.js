@@ -1,4 +1,3 @@
-// src/api/routes/audit.routes.js
 const express = require('express');
 const router = express.Router();
 const auditController = require('../controllers/audit.controller');

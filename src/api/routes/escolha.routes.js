@@ -1,4 +1,3 @@
-// src/api/routes/escolha.routes.js
 const express = require('express');
 const router = express.Router();
 // Assumindo que o controller se chama escolha.controller.js

@@ -1,4 +1,3 @@
-// src/api/controllers/audit.controller.js
 const { AuditLog, User } = require('../../models');
 
 exports.listarLogs = async (req, res) => {

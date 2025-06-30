@@ -1,4 +1,3 @@
-// src/api/controllers/jogador.controller.js
 const { Jogador } = require('../../models');
 const brawlStarsService = require('../../services/brawlStars.service');
 

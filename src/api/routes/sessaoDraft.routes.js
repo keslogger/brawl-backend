@@ -1,4 +1,3 @@
-// src/api/routes/sessaoDraft.routes.js
 const express = require('express');
 const router = express.Router();
 const sessaoDraftController = require('../controllers/sessaoDraft.controller');
