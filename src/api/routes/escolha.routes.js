@@ -1,12 +1,37 @@
 const express = require('express');
 const router = express.Router();
-// Assumindo que o controller se chama escolha.controller.js
 const escolhaController = require('../controllers/escolha.controller');
+const authMiddleware = require('../middleware/auth.middleware');
 
-// A rota deve ser no plural: '/escolhas' para corresponder ao que o Thunder Client está chamando
-router.post('/escolhas', escolhaController.criarEscolha);
+/**
+ * @swagger
+ * /escolhas:
+ *   post:
+ *     summary: Registra um novo pick para uma sessão de draft
+ *     tags: [Escolhas]
+ *     description: Esta rota é usada para registrar os picks (seleções) de heróis, seguindo a ordem de turnos. Os bans são registrados pela rota de bans em massa.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               personagemEscolhido:
+ *                 type: string
+ *               equipeId:
+ *                 type: integer
+ *               sessaoDraftId:
+ *                 type: integer
+ *     responses:
+ *       '201':
+ *         description: Pick registrado com sucesso.
+ *       '403':
+ *         description: Ação não permitida (não é o turno da equipe, ou a fase de picks não está ativa).
+ */
 
-// No futuro, se você quiser uma rota para listar todas as escolhas, ela viria aqui:
-// router.get('/escolhas', escolhaController.listarEscolhas);
+router.post('/escolhas', authMiddleware, escolhaController.criarEscolha);
 
 module.exports = router;
