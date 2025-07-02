@@ -1,19 +1,163 @@
+// src/api/routes/sessaoDraft.routes.js
 const express = require('express');
 const router = express.Router();
 const sessaoDraftController = require('../controllers/sessaoDraft.controller');
-// A linha abaixo importa o nosso middleware de autenticação
 const authMiddleware = require('../middleware/auth.middleware');
 
-// Rotas existentes
+/**
+ * @swagger
+ * tags:
+ *   name: Sessões de Draft
+ *   description: Endpoints para criar e gerenciar o ciclo de vida de uma sessão de draft.
+ */
+
+/**
+ * @swagger
+ * /sessoes-draft:
+ *   post:
+ *     summary: Cria uma nova sessão de draft
+ *     tags: [Sessões de Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               equipeAzulId:
+ *                 type: integer
+ *                 example: 1
+ *               equipeVermelhaId:
+ *                 type: integer
+ *                 example: 2
+ *     responses:
+ *       '201':
+ *         description: Sessão criada com sucesso. O status inicial será 'ban_em_andamento'.
+ */
 router.post('/sessoes-draft', authMiddleware, sessaoDraftController.criarSessao);
-router.get('/sessoes-draft/:id', sessaoDraftController.buscarSessaoPorId);
 
-// --- NOVAS ROTAS DE GESTÃO DE ESTADO ---
-router.put('/sessoes-draft/:id/iniciar', authMiddleware, sessaoDraftController.iniciarSessao);
-router.put('/sessoes-draft/:id/finalizar', authMiddleware, sessaoDraftController.finalizarSessao);
-router.put('/sessoes-draft/:id/reiniciar', authMiddleware, sessaoDraftController.reiniciarSessao);
+/**
+ * @swagger
+ * /sessoes-draft/{id}:
+ *   get:
+ *     summary: Busca uma sessão de draft e suas escolhas
+ *     tags: [Sessões de Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: Sessão encontrada com sucesso.
+ *       '404':
+ *         description: Sessão não encontrada.
+ */
+router.get('/sessoes-draft/:id', authMiddleware, sessaoDraftController.buscarSessaoPorId);
 
-// --- NOVA ROTA PARA BANS EM MASSA ---
+/**
+ * @swagger
+ * /sessoes-draft/{sessaoDraftId}/bans:
+ *   post:
+ *     summary: Registra todos os 6 bans de uma só vez
+ *     tags: [Sessões de Draft]
+ *     description: Envia os 3 bans da equipe azul e os 3 da equipe vermelha. Após o sucesso, o status da sessão muda para 'pick_em_andamento'.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: sessaoDraftId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               bansEquipeAzul:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["Leon", "Spike", "Crow"]
+ *               bansEquipeVermelha:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["Amber", "Sandy", "Meg"]
+ *     responses:
+ *       '201':
+ *         description: Bans registrados com sucesso.
+ */
 router.post('/sessoes-draft/:sessaoDraftId/bans', authMiddleware, sessaoDraftController.registrarBans);
+
+/**
+ * @swagger
+ * /sessoes-draft/{id}/iniciar:
+ *   put:
+ *     summary: Altera o status de uma sessão para 'ban_em_andamento'
+ *     tags: [Sessões de Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: Status da sessão alterado com sucesso.
+ */
+router.put('/sessoes-draft/:id/iniciar', authMiddleware, sessaoDraftController.iniciarSessao);
+
+/**
+ * @swagger
+ * /sessoes-draft/{id}/finalizar:
+ *   put:
+ *     summary: Altera o status de uma sessão para 'finalizado'
+ *     tags: [Sessões de Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: Status da sessão alterado com sucesso.
+ */
+
+router.put('/sessoes-draft/:id/finalizar', authMiddleware, sessaoDraftController.finalizarSessao);
+
+/**
+ * @swagger
+ * /sessoes-draft/{id}/reiniciar:
+ *   put:
+ *     summary: Altera o status de uma sessão para 'pendente'
+ *     tags: [Sessões de Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: Status da sessão alterado com sucesso.
+ */
+
+router.put('/sessoes-draft/:id/reiniciar', authMiddleware, sessaoDraftController.reiniciarSessao);
 
 module.exports = router;
