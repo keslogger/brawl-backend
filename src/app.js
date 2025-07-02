@@ -25,7 +25,11 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 const PORT = process.env.PORT || 3000;
 
-// --- 3. CONFIGURAÇÃO CENTRAL DO SWAGGER ---
+// --- 3. CONFIGURAÇÃO DINÂMICA E CENTRAL DO SWAGGER ---
+const isProduction = process.env.NODE_ENV === 'production';
+// Define a URL base dinamicamente
+const serverUrl = isProduction ? 'https://brawl-backend.fly.dev' : `http://localhost:${PORT}`;
+
 const swaggerOptions = {
   swaggerDefinition: {
     openapi: '3.0.0',
@@ -54,6 +58,7 @@ const swaggerOptions = {
         }
       }
     },    
+    // CORREÇÃO: A seção de tags precisa estar definida e completa
     tags: [
       { name: 'Autenticação', description: 'Endpoints para login e registro' },
       { name: 'Usuários', description: 'Gerenciamento de usuários administradores' },
@@ -66,7 +71,8 @@ const swaggerOptions = {
       { name: 'Auditoria', description: 'Endpoint para visualizar logs de auditoria' }
     ],
     security: [{ bearerAuth: [] }],
-    servers: [{ url: `http://localhost:${PORT}` }]
+    // CORREÇÃO: A URL do servidor agora é dinâmica
+    servers: [{ url: serverUrl }]
   },
   // Diz ao Swagger para ler os comentários nos arquivos de rotas
   apis: ['./src/api/routes/*.js'],
@@ -110,8 +116,7 @@ async function startServer() {
     await db.sequelize.sync({ alter: true });
     console.log('Tabelas e relacionamentos sincronizados com o banco de dados.');
     
-    // --- CORREÇÃO AQUI ---
-    // Adicionamos '0.0.0.0' para que o servidor aceite conexões externas dentro da rede da Fly.io
+    // CORREÇÃO: Adicionamos '0.0.0.0' para o deploy
     server.listen(PORT, '0.0.0.0', () => {
       console.log(`Servidor rodando na porta ${PORT} e escutando em todas as interfaces de rede.`);
     });
