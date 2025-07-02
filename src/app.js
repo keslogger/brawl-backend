@@ -54,10 +54,17 @@ const swaggerOptions = {
         }
       }
     },    
-    // tags: [
-    //   { name: 'Equipes', description: 'Operações relacionadas a equipes' }
-    //   // Outras tags podem ser adicionadas aqui...
-    // ],
+    tags: [
+      { name: 'Autenticação', description: 'Endpoints para login e registro' },
+      { name: 'Usuários', description: 'Gerenciamento de usuários administradores' },
+      { name: 'Equipes', description: 'Operações relacionadas a equipes' },
+      { name: 'Jogadores', description: 'Operações relacionadas a jogadores' },
+      { name: 'Brawlers', description: 'Endpoint para buscar dados dos heróis do jogo' },
+      { name: 'Sessões de Draft', description: 'Endpoints para gerenciar o ciclo de vida de um draft' },
+      { name: 'Escolhas', description: 'Endpoint para registrar picks e bans' },
+      { name: "Configurações", description: "Endpoints para gerenciar mapas e modos de jogo" },
+      { name: 'Auditoria', description: 'Endpoint para visualizar logs de auditoria' }
+    ],
     security: [{ bearerAuth: [] }],
     servers: [{ url: `http://localhost:${PORT}` }]
   },
