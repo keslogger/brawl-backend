@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
-
 /**
  * @swagger
  * tags:
- *   - name: Autenticação
- *     description: Endpoints para registro e login de usuários
+ *   name: Autenticação
+ *   description: Endpoints para registro e login de usuários
  */
 
 /**
@@ -69,6 +68,7 @@ router.post('/auth/register', authController.register);
  *       '401':
  *         description: Credenciais inválidas.
  */
+
 router.post('/auth/login', authController.login);
 
 module.exports = router;

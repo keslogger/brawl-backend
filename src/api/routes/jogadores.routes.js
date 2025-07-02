@@ -15,6 +15,7 @@ const authMiddleware = require('../middleware/auth.middleware');
  *       '200':
  *         description: Lista de jogadores retornada com sucesso.
  */
+router.get('/jogadores', authMiddleware, jogadorController.listarJogadores);
 
 /**
  * @swagger
@@ -39,8 +40,6 @@ const authMiddleware = require('../middleware/auth.middleware');
  *       '201':
  *         description: Jogador criado com sucesso.
  */
-
-router.get('/jogadores', authMiddleware, jogadorController.listarJogadores);
 router.post('/jogadores', authMiddleware, jogadorController.criarJogador);
 
 /**
@@ -92,7 +91,6 @@ router.post('/jogadores/importar/:playerTag', authMiddleware, jogadorController.
  *       '200':
  *         description: Dados do jogador retornados com sucesso.
  */
-
 router.get('/brawlstars/jogadores/:playerTag', authMiddleware, jogadorController.buscarJogadorNaAPI);
 
 module.exports = router;

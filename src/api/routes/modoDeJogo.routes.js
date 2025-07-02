@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const modoController = require('../controllers/modoDeJogo.controller');
 const authMiddleware = require('../middleware/auth.middleware');
+
 /**
  * @swagger
  * /modos-de-jogo:
@@ -14,6 +15,7 @@ const authMiddleware = require('../middleware/auth.middleware');
  *       '200':
  *         description: Sucesso.
  */
+router.get('/modos-de-jogo', authMiddleware, modoController.listarModos);
 
 /**
  * @swagger
@@ -37,9 +39,29 @@ const authMiddleware = require('../middleware/auth.middleware');
  *       '201':
  *         description: Modo de jogo criado com sucesso.
  */
-
 router.post('/modos-de-jogo', authMiddleware, modoController.criarModo);
-router.get('/modos-de-jogo', authMiddleware, modoController.listarModos);
+
+/**
+ * @swagger
+ * /modos-de-jogo/{id}:
+ *   delete:
+ *     summary: Deleta um modo de jogo
+ *     tags: [Configurações]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: O ID do modo de jogo a ser deletado.
+ *     responses:
+ *       '204':
+ *         description: Modo de jogo deletado com sucesso.
+ *       '404':
+ *         description: Modo de jogo não encontrado.
+ */
 router.delete('/modos-de-jogo/:id', authMiddleware, modoController.deletarModo);
 
 module.exports = router;

@@ -5,14 +5,6 @@ const authMiddleware = require('../middleware/auth.middleware');
 
 /**
  * @swagger
- * tags:
- *   name: Brawlers
- *   description: Endpoints para dados dos Brawlers
- */
-
-
-/**
- * @swagger
  * /brawlers:
  *   get:
  *     summary: Retorna a lista de todos os Brawlers (heróis) do jogo.

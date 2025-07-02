@@ -27,13 +27,11 @@ const authMiddleware = require('../middleware/auth.middleware');
  *             properties:
  *               equipeAzulId:
  *                 type: integer
- *                 example: 1
  *               equipeVermelhaId:
  *                 type: integer
- *                 example: 2
  *     responses:
  *       '201':
- *         description: Sessão criada com sucesso. O status inicial será 'ban_em_andamento'.
+ *         description: Sessão criada com sucesso.
  */
 router.post('/sessoes-draft', authMiddleware, sessaoDraftController.criarSessao);
 
@@ -54,8 +52,6 @@ router.post('/sessoes-draft', authMiddleware, sessaoDraftController.criarSessao)
  *     responses:
  *       '200':
  *         description: Sessão encontrada com sucesso.
- *       '404':
- *         description: Sessão não encontrada.
  */
 router.get('/sessoes-draft/:id', authMiddleware, sessaoDraftController.buscarSessaoPorId);
 
@@ -65,7 +61,6 @@ router.get('/sessoes-draft/:id', authMiddleware, sessaoDraftController.buscarSes
  *   post:
  *     summary: Registra todos os 6 bans de uma só vez
  *     tags: [Sessões de Draft]
- *     description: Envia os 3 bans da equipe azul e os 3 da equipe vermelha. Após o sucesso, o status da sessão muda para 'pick_em_andamento'.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -85,12 +80,10 @@ router.get('/sessoes-draft/:id', authMiddleware, sessaoDraftController.buscarSes
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["Leon", "Spike", "Crow"]
  *               bansEquipeVermelha:
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["Amber", "Sandy", "Meg"]
  *     responses:
  *       '201':
  *         description: Bans registrados com sucesso.
@@ -101,7 +94,7 @@ router.post('/sessoes-draft/:sessaoDraftId/bans', authMiddleware, sessaoDraftCon
  * @swagger
  * /sessoes-draft/{id}/iniciar:
  *   put:
- *     summary: Altera o status de uma sessão para 'ban_em_andamento'
+ *     summary: (Admin) Altera o status de uma sessão para 'ban_em_andamento'
  *     tags: [Sessões de Draft]
  *     security:
  *       - bearerAuth: []
@@ -121,7 +114,7 @@ router.put('/sessoes-draft/:id/iniciar', authMiddleware, sessaoDraftController.i
  * @swagger
  * /sessoes-draft/{id}/finalizar:
  *   put:
- *     summary: Altera o status de uma sessão para 'finalizado'
+ *     summary: (Admin) Altera o status de uma sessão para 'finalizado'
  *     tags: [Sessões de Draft]
  *     security:
  *       - bearerAuth: []
@@ -135,14 +128,13 @@ router.put('/sessoes-draft/:id/iniciar', authMiddleware, sessaoDraftController.i
  *       '200':
  *         description: Status da sessão alterado com sucesso.
  */
-
 router.put('/sessoes-draft/:id/finalizar', authMiddleware, sessaoDraftController.finalizarSessao);
 
 /**
  * @swagger
  * /sessoes-draft/{id}/reiniciar:
  *   put:
- *     summary: Altera o status de uma sessão para 'pendente'
+ *     summary: (Admin) Altera o status de uma sessão para 'pendente'
  *     tags: [Sessões de Draft]
  *     security:
  *       - bearerAuth: []
@@ -156,7 +148,6 @@ router.put('/sessoes-draft/:id/finalizar', authMiddleware, sessaoDraftController
  *       '200':
  *         description: Status da sessão alterado com sucesso.
  */
-
 router.put('/sessoes-draft/:id/reiniciar', authMiddleware, sessaoDraftController.reiniciarSessao);
 
 module.exports = router;
