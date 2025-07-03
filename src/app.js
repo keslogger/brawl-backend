@@ -72,7 +72,7 @@ const swaggerOptions = {
     ],
     security: [{ bearerAuth: [] }],
     // CORREÇÃO: A URL do servidor agora é dinâmica
-    servers: [{ url: serverUrl }]
+    servers: [{ url: `${serverUrl}/api` }]
   },
   // Diz ao Swagger para ler os comentários nos arquivos de rotas
   apis: ['./src/api/routes/*.js'],
