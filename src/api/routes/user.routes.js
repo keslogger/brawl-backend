@@ -71,7 +71,7 @@ router.post('/users', authMiddleware, authorizeAdmin, userController.criarAdmin)
  *       '204':
  *         description: Usuário deletado com sucesso.
  *       '403':
- *         description: Acesso negado (ex: tentar se auto-deletar).
+ *         description: "Acesso negado (ex: tentar se auto-deletar)."
  *       '404':
  *         description: Usuário não encontrado.
  */
