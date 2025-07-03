@@ -1,4 +1,4 @@
-const { User } = require('../models');
+const { User } = require('../../models'); // Caminho corrigido aqui
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -19,7 +19,7 @@ exports.register = async (req, res) => {
     // Criptografa a senha
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Correção: Adiciona a 'role' ao criar o usuário para evitar o erro notNull.
+    // Adiciona a 'role' ao criar o usuário para evitar o erro notNull.
     const newUser = await User.create({
       email,
       password: hashedPassword,
