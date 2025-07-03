@@ -15,7 +15,19 @@ const authMiddleware = (req, res, next) => {
     req.user = decoded; // Adiciona os dados do usuário (id, role) à requisição
     next(); // Se o token for válido, permite que a requisição continue
   } catch (error) {
-    res.status(400).json({ error: 'Token inválido.' });
+    // --- DEBUGGING ---
+    // Loga o erro específico no console do servidor para podermos ver nos logs do Fly.io
+    console.error('Erro na verificação do JWT:', error);
+
+    // Retorna uma resposta mais detalhada para o cliente (Swagger)
+    return res.status(400).json({
+      error: 'Token inválido.',
+      details: {
+        name: error.name,     // Ex: "JsonWebTokenError" ou "TokenExpiredError"
+        message: error.message, // Ex: "invalid signature" ou "jwt expired"
+      },
+    });
+    // --- FIM DO DEBUGGING ---
   }
 };
 
