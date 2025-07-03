@@ -1,18 +1,45 @@
-const { Jogador } = require('../../models');
+const { Jogador, Equipe } = require('../../models');
 const brawlStarsService = require('../../services/brawlStars.service');
 
-// Função para criar um novo jogador manualmente
+// Função para criar um novo jogador manualmente e associá-lo a uma equipe
 exports.criarJogador = async (req, res) => {
   try {
-    const { nome, instituicaoDeEnsino } = req.body;
+    const { nome, instituicaoDeEnsino, equipeId } = req.body;
+
+    // 1. Validação dos dados de entrada
+    if (!nome || !equipeId) {
+      return res.status(400).json({ error: 'Nome do jogador e ID da equipe são obrigatórios.' });
+    }
+
+    // 2. CORREÇÃO: Converte o ID para um número e valida
+    const idNumericoEquipe = parseInt(equipeId, 10);
+    if (isNaN(idNumericoEquipe)) {
+      return res.status(400).json({ error: 'O ID da equipe deve ser um número válido.' });
+    }
+
+    // 3. Procura a equipe no banco de dados
+    const equipe = await Equipe.findByPk(idNumericoEquipe);
+
+    if (!equipe) {
+      return res.status(404).json({ error: `Equipe com o ID ${idNumericoEquipe} não foi encontrada.` });
+    }
+
+    // 4. Cria o jogador, associando-o à equipe
     const novoJogador = await Jogador.create({
       nome,
       instituicaoDeEnsino,
-      fonte: 'local' // Define a fonte como 'local' para criação manual
+      equipeId: idNumericoEquipe, // Associa o jogador à equipe
+      fonte: 'local'
     });
+
     res.status(201).json(novoJogador);
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao criar jogador: ' + error.message });
+    // Tratamento de erro mais robusto
+    if (error.name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({ error: 'Erro ao criar jogador: já existe um jogador com este nome.' });
+    }
+    console.error('Erro detalhado ao criar jogador:', error);
+    res.status(500).json({ error: 'Ocorreu um erro inesperado no servidor.' });
   }
 };
 
