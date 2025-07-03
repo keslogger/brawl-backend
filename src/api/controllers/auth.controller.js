@@ -1,4 +1,4 @@
-const { User } = require('../../models');
+const { User } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -6,11 +6,34 @@ require('dotenv').config();
 exports.register = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10); // Criptografa a senha
-    const newUser = await User.create({ email, password: hashedPassword });
-    res.status(201).json({ message: 'Usuário criado com sucesso!', userId: newUser.id });
+
+    // Melhoria de segurança: Verifica se já existe um super_admin no sistema.
+    const superAdminExists = await User.findOne({ where: { role: 'super_admin' } });
+
+    if (superAdminExists) {
+      return res.status(403).json({
+        error: 'Registro falhou: um super_admin já existe no sistema.',
+      });
+    }
+
+    // Criptografa a senha
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Correção: Adiciona a 'role' ao criar o usuário para evitar o erro notNull.
+    const newUser = await User.create({
+      email,
+      password: hashedPassword,
+      role: 'super_admin',
+    });
+
+    res.status(201).json({ message: 'Usuário super_admin registrado com sucesso!', userId: newUser.id });
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao registrar usuário: ' + error.message });
+    // Trata erros específicos como email duplicado (409 Conflict)
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(409).json({ error: 'Erro ao registrar usuário: o email já está em uso.' });
+    }
+    // Para outros erros, retorna um erro de servidor genérico.
+    res.status(500).json({ error: 'Erro ao registrar usuário: ' + error.message });
   }
 };
 
