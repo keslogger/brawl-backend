@@ -1,5 +1,3 @@
-// c:/Users/jkesl/brawl-backend/src/app.js
-
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
@@ -7,7 +5,7 @@ const path = require('path');
 require('dotenv').config();
 
 // Importar rotas com os caminhos corretos
-const jogadorRoutes = require('./api/routes/jogador.routes.js');
+const jogadorRoutes = require('./api/routes/jogadores.routes.js');
 const userRoutes = require('./api/routes/user.routes.js');
 const debugRoutes = require('./api/routes/debug.routes.js'); // Caminho corrigido
 
