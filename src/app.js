@@ -7,7 +7,7 @@ require('dotenv').config();
 // Importar rotas com os caminhos corretos
 const jogadorRoutes = require('./api/routes/jogadores.routes.js');
 const userRoutes = require('./api/routes/user.routes.js');
-const debugRoutes = require('./api/routes/debug.routes.js'); // Caminho corrigido
+const debugRoutes = require('./api/routes/debug.routes.js');
 
 const app = express();
 
@@ -62,5 +62,16 @@ app.get('/', (req, res) => {
   res.send('<h1>API do Brawl Backend está no ar!</h1><p>Acesse <a href="/api-docs">/api-docs</a> para ver a documentação.</p>');
 });
 
-// Exporta o app para ser usado pelo server.js ou testes
+// --- Inicia o Servidor ---
+// Esta verificação garante que o servidor só será iniciado quando o arquivo for
+// executado diretamente (node src/app.js), e não quando for importado por um teste.
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000; // Fly.io define a porta via process.env.PORT
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando e escutando na porta ${PORT}`);
+    console.log(`Documentação disponível em http://localhost:${PORT}/api-docs`);
+  });
+}
+
+// Exporta o app para ser usado em outros lugares (como testes)
 module.exports = app;
