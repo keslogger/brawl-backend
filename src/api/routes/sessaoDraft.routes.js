@@ -80,10 +80,12 @@ router.get('/sessoes-draft/:id', authMiddleware, sessaoDraftController.buscarSes
  *                 type: array
  *                 items:
  *                   type: string
+ *                 example: ["Leon", "Spike", "Crow"]
  *               bansEquipeVermelha:
  *                 type: array
  *                 items:
  *                   type: string
+ *                 example: ["Sandy", "Amber", "Meg"]
  *     responses:
  *       '201':
  *         description: Bans registrados com sucesso.
