@@ -1,135 +1,68 @@
+// c:/Users/jkesl/brawl-backend/src/app.js
+
 const express = require('express');
-const http = require('http');
-const { Server } = require("socket.io");
-const db = require('./models');
-
-// --- 1. IMPORTAÇÕES DO SWAGGER ---
-const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+const path = require('path');
+require('dotenv').config();
 
-// --- 2. IMPORTAÇÕES DAS ROTAS ---
-const jogadorRoutes = require('./api/routes/jogadores.routes');
-const equipeRoutes = require('./api/routes/equipes.routes');
-const escolhaRoutes = require('./api/routes/escolha.routes');
-const sessaoDraftRoutes = require('./api/routes/sessaoDraft.routes');
-const authRoutes = require('./api/routes/auth.routes');
-const auditRoutes = require('./api/routes/audit.routes');
-const brawlerRoutes = require('./api/routes/brawler.routes.js');
-const userRoutes = require ('./api/routes/user.routes.js');
-const modoDeJogoRoutes = require('./api/routes/modoDeJogo.routes.js');
-const mapaRoutes = require('./api/routes/mapa.routes.js');
-const debugRoutes = require('./src/api/routes/debug.routes.js');
-
+// Importar rotas com os caminhos corretos
+const jogadorRoutes = require('./api/routes/jogador.routes.js');
+const userRoutes = require('./api/routes/user.routes.js');
+const debugRoutes = require('./api/routes/debug.routes.js'); // Caminho corrigido
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
-const PORT = process.env.PORT || 3000;
 
-// --- 3. CONFIGURAÇÃO DINÂMICA E CENTRAL DO SWAGGER ---
-const isProduction = process.env.NODE_ENV === 'production';
-// Define a URL base dinamicamente
-const serverUrl = isProduction ? 'https://brawl-backend.fly.dev' : `http://localhost:${PORT}`;
+app.use(express.json());
 
+// --- Configuração do Swagger ---
 const swaggerOptions = {
-  swaggerDefinition: {
+  definition: {
     openapi: '3.0.0',
     info: {
-      title: 'API do Draft Brawl Stars',
+      title: 'Brawl Backend API',
       version: '1.0.0',
-      description: 'Documentação da API para o sistema de draft.',
+      description: 'Documentação completa da API para o backend do Brawl Stars Draft.',
     },
-    // Define os Schemas, Segurança e Tags aqui, em um único lugar
+    servers: [
+      {
+        url: 'https://brawl-backend.fly.dev', // URL de produção
+        description: 'Servidor de Produção (Fly.io)',
+      },
+      {
+        url: 'http://localhost:3000',
+        description: 'Servidor de Desenvolvimento Local',
+      },
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
+          description: 'Insira o token JWT no formato: Bearer {token}',
         },
       },
-      schemas: {
-        Equipe: {
-          type: 'object',
-          properties: {
-            id: { type: 'integer' },
-            nome: { type: 'string', example: 'Os Destemidos' },
-            icone: { type: 'string', example: 'icone.png' },
-          }
-        }
-      }
-    },    
-    // CORREÇÃO: A seção de tags precisa estar definida e completa
-    tags: [
-      { name: 'Autenticação', description: 'Endpoints para login e registro' },
-      { name: 'Usuários', description: 'Gerenciamento de usuários administradores' },
-      { name: 'Equipes', description: 'Operações relacionadas a equipes' },
-      { name: 'Jogadores', description: 'Operações relacionadas a jogadores' },
-      { name: 'Brawlers', description: 'Endpoint para buscar dados dos heróis do jogo' },
-      { name: 'Sessões de Draft', description: 'Endpoints para gerenciar o ciclo de vida de um draft' },
-      { name: 'Escolhas', description: 'Endpoint para registrar picks e bans' },
-      { name: "Configurações", description: "Endpoints para gerenciar mapas e modos de jogo" },
-      { name: 'Auditoria', description: 'Endpoint para visualizar logs de auditoria' }
-    ],
-    security: [{ bearerAuth: [] }],
-    // CORREÇÃO: A URL do servidor agora é dinâmica
-    servers: [{ url: `${serverUrl}/api` }]
+    },
   },
-  // Diz ao Swagger para ler os comentários nos arquivos de rotas
-  apis: ['./src/api/routes/*.js'],
+  // O padrão agora busca dentro de src/api/routes
+  apis: [path.join(__dirname, './api/routes/*.routes.js')],
 };
 
-const swaggerDocs = swaggerJSDoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
+// --- Rota da Documentação ---
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// --- 4. MIDDLEWARES E ROTAS DA API ---
-app.use(express.json());
-app.use((req, res, next) => {
-  req.io = io;
-  next();
-});
-
+// --- Rotas da API ---
 app.use('/api', jogadorRoutes);
-app.use('/api', equipeRoutes);
-app.use('/api', escolhaRoutes);
-app.use('/api', sessaoDraftRoutes);
-app.use('/api', authRoutes);
-app.use('/api', auditRoutes);
-app.use('/api', brawlerRoutes);
 app.use('/api', userRoutes);
-app.use('/api', modoDeJogoRoutes);
-app.use('/api', mapaRoutes);
-app.use('/api', debugRoutes);
+app.use('/api', debugRoutes); // Rota de debug registrada
 
+// Rota raiz para verificar se o servidor está no ar
 app.get('/', (req, res) => {
-  res.send('Servidor do Draft Brawl Stars está no ar!');
+  res.send('<h1>API do Brawl Backend está no ar!</h1><p>Acesse <a href="/api-docs">/api-docs</a> para ver a documentação.</p>');
 });
 
-io.on('connection', (socket) => {
-  console.log('>>> Um usuário se conectou via WebSocket:', socket.id);
-  socket.on('disconnect', () => {
-    console.log('<<< Um usuário se desconectou:', socket.id);
-  });
-});
-
-async function startServer() {
-  try {
-    await db.sequelize.sync({ alter: true });
-    console.log('Tabelas e relacionamentos sincronizados com o banco de dados.');
-    
-    // CORREÇÃO: Adicionamos '0.0.0.0' para o deploy
-    server.listen(PORT, '0.0.0.0', () => {
-      console.log(`Servidor rodando na porta ${PORT} e escutando em todas as interfaces de rede.`);
-    });
-  } catch (error) {
-    console.error('Não foi possível conectar ao banco de dados:', error);
-  }
-}
-
-// Inicia o servidor apenas se este script for executado diretamente
-if (require.main === module) {
-  startServer();
-}
-
-module.exports = server;
+// Exporta o app para ser usado pelo server.js ou testes
+module.exports = app;
