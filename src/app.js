@@ -5,19 +5,35 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const path = require('path');
 const requireDirectory = require('require-directory');
+const cors = require('cors');
+const helmet = require('helmet');
 require('dotenv').config();
 
 const app = express();
+app.use(helmet());
+
 const server = http.createServer(app);
+
+// --- Configuração Centralizada de CORS ---
+// Define as regras de CORS que serão usadas tanto pela API HTTP quanto pelo Socket.IO.
+const corsOptions = {
+  origin: '*', // Em produção, restrinja para o seu domínio: 'https://seu-frontend.com'
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: ['Content-Type', 'Authorization'], // Permite os cabeçalhos que o cliente envia
+};
+
+// --- Middlewares Globais ---
+// 1. Aplica as regras de CORS a todas as rotas da API.
+app.use(cors(corsOptions));
+// 2. Garante que as requisições pre-flight (OPTIONS) sejam respondidas corretamente.
+app.options('*', cors(corsOptions));
+
+// --- Configuração do Socket.IO ---
 const io = new Server(server, {
-  cors: {
-    origin: "*", // Em produção, restrinja para o seu domínio: 'https://seu-frontend.com'
-    methods: ["GET", "POST", "PUT", "DELETE"]
-  }
+  cors: corsOptions // Reutiliza as mesmas opções de CORS para o Socket.IO
 });
 
-// Middleware para disponibilizar a instância do 'io' em cada requisição.
-// Isso faz com que o `req.io` funcione nos seus controllers.
+// 3. Disponibiliza a instância do 'io' em cada requisição HTTP.
 app.use((req, res, next) => {
   req.io = io;
   next();
@@ -36,11 +52,11 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'https://brawl-backend.fly.dev/api', // URL de produção com /api
+        url: 'https://brawl-backend.fly.dev/api',
         description: 'Servidor de Produção (Fly.io)',
       },
       {
-        url: 'http://localhost:3000/api', // URL de desenvolvimento com /api
+        url: 'http://localhost:3000/api',
         description: 'Servidor de Desenvolvimento Local',
       },
     ],
@@ -55,7 +71,6 @@ const swaggerOptions = {
       },
     },
   },
-  // O padrão agora busca dentro de src/api/routes
   apis: [path.join(__dirname, './api/routes/*.routes.js')],
 };
 
@@ -65,7 +80,6 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // --- Rotas da API ---
-// Carrega e registra todas as rotas da pasta 'routes' automaticamente.
 console.log('Registrando rotas da API...');
 const routes = requireDirectory(module, './api/routes');
 Object.values(routes).forEach(router => {
@@ -76,7 +90,6 @@ Object.values(routes).forEach(router => {
 io.on('connection', (socket) => {
   console.log('Um usuário se conectou via WebSocket:', socket.id);
 
-  // Sala para uma sessão de draft específica
   socket.on('entrar_sessao', (sessaoId) => {
     const roomName = `sessao_${sessaoId}`;
     socket.join(roomName);
@@ -93,9 +106,13 @@ app.get('/', (req, res) => {
   res.send('<h1>API do Brawl Backend está no ar!</h1><p>Acesse <a href="/api-docs">/api-docs</a> para ver a documentação.</p>');
 });
 
+// Middleware de tratamento de erros (deve ser o último middleware)
+app.use((err, req, res, next) => {
+  console.error('ERRO NÃO TRATADO:', err.stack);
+  res.status(500).send({ error: 'Algo deu errado no servidor!' });
+});
+
 // --- Inicia o Servidor ---
-// Esta verificação garante que o servidor só será iniciado quando o arquivo for
-// executado diretamente (node src/app.js), e não quando for importado por um teste.
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   server.listen(PORT, () => {
@@ -104,5 +121,4 @@ if (require.main === module) {
   });
 }
 
-// Exporta o app para ser usado pelo server.js ou testes
 module.exports = app;
