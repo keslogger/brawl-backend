@@ -1,7 +1,7 @@
 const { Jogador, Equipe } = require('../../models');
 const brawlStarsService = require('../../services/brawlStars.service');
 
-// Função para criar um novo jogador manualmente e associá-lo a uma equipe
+// ... (suas funções criarJogador e listarJogadores permanecem iguais) ...
 exports.criarJogador = async (req, res) => {
   try {
     const { nome, instituicaoDeEnsino, equipeId } = req.body;
@@ -43,7 +43,6 @@ exports.criarJogador = async (req, res) => {
   }
 };
 
-// Função para listar todos os jogadores do nosso banco de dados
 exports.listarJogadores = async (req, res) => {
   try {
     const jogadores = await Jogador.findAll();
@@ -53,6 +52,7 @@ exports.listarJogadores = async (req, res) => {
   }
 };
 
+
 // Busca os dados de um jogador na API do Brawl Stars, mas não o salva
 exports.buscarJogadorNaAPI = async (req, res) => {
   try {
@@ -60,11 +60,16 @@ exports.buscarJogadorNaAPI = async (req, res) => {
     const dadosJogador = await brawlStarsService.buscarJogadorPorTag(playerTag);
     res.status(200).json(dadosJogador);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    // **MUDANÇA AQUI**
+    // Logamos o erro no servidor para depuração
+    console.error(`Erro ao buscar jogador com tag ${req.params.playerTag}:`, error.message);
+    
+    // Usamos o statusCode que o serviço nos enviou, ou 500 como padrão.
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ error: error.message });
   }
 };
 
-// --- NOVA FUNÇÃO ---
 // Importa um jogador da API do Brawl Stars e salva no nosso banco de dados
 exports.importarJogador = async (req, res) => {
   try {
@@ -75,18 +80,20 @@ exports.importarJogador = async (req, res) => {
       return res.status(400).json({ error: 'O nome da instituição de ensino é obrigatório.' });
     }
 
-    // 1. Busca os dados na API externa usando nosso serviço
     const dadosApi = await brawlStarsService.buscarJogadorPorTag(playerTag);
 
-    // 2. Cria o jogador no nosso banco de dados com os dados importados
     const novoJogador = await Jogador.create({
-      nome: dadosApi.name, // O nome vem da API
-      instituicaoDeEnsino: instituicaoDeEnsino, // A instituição vem do nosso formulário
-      fonte: 'api_brawl_stars', // Marcamos a fonte como externa
+      nome: dadosApi.name,
+      instituicaoDeEnsino: instituicaoDeEnsino,
+      fonte: 'api_brawl_stars',
     });
 
     res.status(201).json(novoJogador);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao importar jogador: ' + error.message });
+    // **MUDANÇA AQUI**
+    console.error(`Erro ao importar jogador com tag ${req.params.playerTag}:`, error.message);
+
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ error: 'Erro ao importar jogador: ' + error.message });
   }
 };

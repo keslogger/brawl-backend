@@ -14,35 +14,62 @@ const apiClient = axios.create({
   }
 });
 
-// --- FUNÇÃO EXISTENTE PARA BUSCAR UM JOGADOR ---
+// --- FUNÇÃO EXISTENTE PARA BUSCAR UM JOGADOR (REFATORADA) ---
 const buscarJogadorPorTag = async (playerTag) => {
-  const tagLimpa = playerTag.replace('#', '');
-
-  if (playerCache.has(tagLimpa)) {
-    console.log(`>>> Servindo dados do JOGADOR ${tagLimpa} do cache!`);
-    return playerCache.get(tagLimpa);
+  // Usar a tag original (com #) como chave de cache é mais seguro
+  if (playerCache.has(playerTag)) {
+    console.log(`>>> Servindo dados do JOGADOR ${playerTag} do cache!`);
+    return playerCache.get(playerTag);
   }
 
-  try {
-    console.log(`<<< Buscando dados do JOGADOR ${tagLimpa} na API do Brawl Stars...`);
-    const tagFinal = `%23${tagLimpa}`;
-    const response = await apiClient.get(`/players/${tagFinal}`);
+  // **MELHORIA 1: Usar encodeURIComponent para segurança e clareza**
+  const encodedPlayerTag = encodeURIComponent(playerTag);
 
-    playerCache.set(tagLimpa, response.data);
+  try {
+    console.log(`<<< Buscando dados do JOGADOR ${playerTag} na API do Brawl Stars...`);
+    const response = await apiClient.get(`/players/${encodedPlayerTag}`);
+
+    playerCache.set(playerTag, response.data);
 
     setTimeout(() => {
-      playerCache.delete(tagLimpa);
-      console.log(`Cache para o jogador ${tagLimpa} expirou e foi removido.`);
+      playerCache.delete(playerTag);
+      console.log(`Cache para o jogador ${playerTag} expirou e foi removido.`);
     }, 10 * 60 * 1000); // 10 minutos
 
     return response.data;
   } catch (error) {
-    console.error('Erro ao buscar jogador:', error.response?.data || 'Erro desconhecido');
+    // **MELHORIA 2: Tratamento de erro específico**
+    if (error.response) {
+      // A API externa respondeu com um código de erro (4xx ou 5xx).
+      const { status } = error.response;
+      // Criamos um novo objeto de erro com uma mensagem clara e o status code.
+      const serviceError = new Error('Erro ao comunicar com a API do Brawl Stars.');
+      serviceError.statusCode = status; // Anexamos o status code ao erro.
+
+      switch (status) {
+        case 403:
+          serviceError.message = 'Acesso negado à API do Brawl Stars. Verifique a chave da API e as permissões de IP.';
+          break;
+        case 404:
+          serviceError.message = 'Jogador não encontrado na API do Brawl Stars.';
+          break;
+        case 429:
+          serviceError.message = 'Muitas requisições para a API do Brawl Stars. Tente novamente mais tarde.';
+          break;
+        case 500:
+        case 503:
+          serviceError.message = 'A API do Brawl Stars está indisponível no momento.';
+          break;
+      }
+      // Lançamos o erro enriquecido para o controller.
+      throw serviceError;
+    }
+    // Para outros erros (timeout, problema de rede), lançamos um erro genérico.
     throw new Error('Não foi possível buscar o jogador na API do Brawl Stars.');
   }
 };
 
-// --- NOVA FUNÇÃO PARA LISTAR TODOS OS BRAWLERS ---
+// --- NOVA FUNÇÃO PARA LISTAR TODOS OS BRAWLERS (sem alterações necessárias aqui) ---
 const listarBrawlers = async () => {
   const cacheKey = 'allBrawlers';
 
@@ -55,12 +82,10 @@ const listarBrawlers = async () => {
     console.log('<<< Buscando lista de BRAWLERS na API do Brawl Stars...');
     const response = await apiClient.get('/brawlers');
     
-    // A API retorna os brawlers dentro de um array 'items'
     const brawlers = response.data.items;
     
     brawlerCache.set(cacheKey, brawlers);
 
-    // O cache para a lista de brawlers pode ser mais longo (ex: 12 horas)
     setTimeout(() => {
       brawlerCache.delete(cacheKey);
       console.log('Cache da lista de Brawlers expirou.');
@@ -74,7 +99,6 @@ const listarBrawlers = async () => {
 };
 
 
-// Exporta as duas funções para serem usadas em outras partes do sistema
 module.exports = {
   buscarJogadorPorTag,
   listarBrawlers,
