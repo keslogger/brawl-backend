@@ -6,6 +6,52 @@ const authorizeAdmin = require('../middleware/authorize.middleware');
 
 /**
  * @swagger
+ * tags:
+ *   - name: Autenticação
+ *     description: Rotas para login e gerenciamento de tokens.
+ *   - name: Usuários
+ *     description: Operações relacionadas a usuários administradores.
+ */
+
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Autentica um usuário e retorna um token JWT
+ *     tags: [Autenticação]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "super.admin@torneio.com"
+ *               password:
+ *                 type: string
+ *                 example: "senha123"
+ *     responses:
+ *       '200':
+ *         description: Login bem-sucedido, token retornado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *       '401':
+ *         description: Credenciais inválidas.
+ */
+router.post('/auth/login', userController.login);
+
+/**
+ * @swagger
  * /users:
  *   get:
  *     summary: Lista todos os usuários administradores
