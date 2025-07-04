@@ -51,7 +51,7 @@ const authMiddleware = require('../middleware/auth.middleware');
  *       '201':
  *         description: Jogador criado com sucesso.
  *       '400':
- *         description: Dados inválidos (ex: nome, instituição ou equipeId faltando).
+ *         description: 'Dados inválidos (ex: nome, instituição ou equipeId faltando).'
  *       '404':
  *         description: Equipe não encontrada.
  */
@@ -72,7 +72,7 @@ router.get('/jogadores', authMiddleware, jogadorController.listarJogadores);
  *         required: true
  *         schema:
  *           type: string
- *         description: A tag do jogador (ex: #2Y2Y2Y2Y).
+ *         description: 'A tag do jogador (ex: #2Y2Y2Y2Y).'
  *     responses:
  *       '200':
  *         description: Sucesso.
@@ -95,7 +95,7 @@ router.get('/jogadores/buscar-api/:playerTag', authMiddleware, jogadorController
  *         required: true
  *         schema:
  *           type: string
- *         description: A tag do jogador a ser importado (ex: #2Y2Y2Y2Y).
+ *         description: 'A tag do jogador a ser importado (ex: #2Y2Y2Y2Y).'
  *     requestBody:
  *       required: true
  *       content:
