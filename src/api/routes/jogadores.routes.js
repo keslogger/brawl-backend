@@ -1,3 +1,4 @@
+// c:/Users/jkesl/brawl-backend/src/routes/jogador.routes.js
 const express = require('express');
 const router = express.Router();
 const jogadorController = require('../controllers/jogador.controller');
@@ -12,7 +13,7 @@ const authMiddleware = require('../middleware/auth.middleware');
 
 /**
  * @swagger
- * /jogadores:
+ * /api/jogadores:
  *   get:
  *     summary: Lista todos os jogadores cadastrados
  *     tags: [Jogadores]
@@ -60,7 +61,7 @@ router.get('/jogadores', authMiddleware, jogadorController.listarJogadores);
 
 /**
  * @swagger
- * /jogadores/buscar-api/{playerTag}:
+ * /api/jogadores/buscar-api/{playerTag}:
  *   get:
  *     summary: Busca os dados de um jogador na API oficial do Brawl Stars
  *     tags: [Jogadores]
@@ -83,7 +84,7 @@ router.get('/jogadores/buscar-api/:playerTag', authMiddleware, jogadorController
 
 /**
  * @swagger
- * /jogadores/importar/{playerTag}:
+ * /api/jogadores/importar/{playerTag}:
  *   post:
  *     summary: Importa um jogador da API do Brawl Stars e salva no banco de dados local
  *     tags: [Jogadores]
