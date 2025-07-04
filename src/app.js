@@ -2,12 +2,8 @@ const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const path = require('path');
+const requireDirectory = require('require-directory');
 require('dotenv').config();
-
-// Importar rotas com os caminhos corretos
-const jogadorRoutes = require('./api/routes/jogadores.routes.js');
-const userRoutes = require('./api/routes/user.routes.js');
-const debugRoutes = require('./api/routes/debug.routes.js');
 
 const app = express();
 
@@ -53,9 +49,12 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // --- Rotas da API ---
-app.use('/api', jogadorRoutes);
-app.use('/api', userRoutes);
-app.use('/api', debugRoutes); // Rota de debug registrada
+// Carrega e registra todas as rotas da pasta 'routes' automaticamente.
+console.log('Registrando rotas da API...');
+const routes = requireDirectory(module, './api/routes');
+Object.values(routes).forEach(router => {
+  app.use('/api', router);
+});
 
 // Rota raiz para verificar se o servidor está no ar
 app.get('/', (req, res) => {
