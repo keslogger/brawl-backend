@@ -5,7 +5,22 @@ const authMiddleware = require('../middleware/auth.middleware');
 
 /**
  * @swagger
+ * tags:
+ *   name: Jogadores
+ *   description: Gerenciamento de jogadores e integração com a API do Brawl Stars
+ */
+
+/**
+ * @swagger
  * /jogadores:
+ *   get:
+ *     summary: Lista todos os jogadores cadastrados
+ *     tags: [Jogadores]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Sucesso. Retorna uma lista de todos os jogadores.
  *   post:
  *     summary: Cria um novo jogador e o associa a uma equipe
  *     tags: [Jogadores]
@@ -17,6 +32,10 @@ const authMiddleware = require('../middleware/auth.middleware');
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - nome
+ *               - instituicaoDeEnsino
+ *               - equipeId
  *             properties:
  *               nome:
  *                 type: string
@@ -32,24 +51,11 @@ const authMiddleware = require('../middleware/auth.middleware');
  *       '201':
  *         description: Jogador criado com sucesso.
  *       '400':
- *         description: Dados inválidos (ex: nome ou equipeId faltando).
+ *         description: Dados inválidos (ex: nome, instituição ou equipeId faltando).
  *       '404':
  *         description: Equipe não encontrada.
  */
 router.post('/jogadores', authMiddleware, jogadorController.criarJogador);
-
-/**
- * @swagger
- * /jogadores:
- *   get:
- *     summary: Lista todos os jogadores cadastrados
- *     tags: [Jogadores]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       '200':
- *         description: Sucesso.
- */
 router.get('/jogadores', authMiddleware, jogadorController.listarJogadores);
 
 /**
@@ -96,10 +102,13 @@ router.get('/jogadores/buscar-api/:playerTag', authMiddleware, jogadorController
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - instituicaoDeEnsino
  *             properties:
  *               instituicaoDeEnsino:
  *                 type: string
  *                 example: "Universidade Federal"
+ *                 description: "Nome da instituição de ensino do jogador a ser importado."
  *     responses:
  *       '201':
  *         description: Jogador importado com sucesso.
