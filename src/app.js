@@ -24,11 +24,11 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'https://brawl-backend.fly.dev', // URL de produção
+        url: 'https://brawl-backend.fly.dev/api', // URL de produção com /api
         description: 'Servidor de Produção (Fly.io)',
       },
       {
-        url: 'http://localhost:3000',
+        url: 'http://localhost:3000/api', // URL de desenvolvimento com /api
         description: 'Servidor de Desenvolvimento Local',
       },
     ],
@@ -63,15 +63,13 @@ app.get('/', (req, res) => {
 });
 
 // --- Inicia o Servidor ---
-// Esta verificação garante que o servidor só será iniciado quando o arquivo for
-// executado diretamente (node src/app.js), e não quando for importado por um teste.
 if (require.main === module) {
-  const PORT = process.env.PORT || 3000; // Fly.io define a porta via process.env.PORT
+  const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Servidor rodando e escutando na porta ${PORT}`);
     console.log(`Documentação disponível em http://localhost:${PORT}/api-docs`);
   });
 }
 
-// Exporta o app para ser usado em outros lugares (como testes)
+// Exporta o app para ser usado pelo server.js ou testes
 module.exports = app;
