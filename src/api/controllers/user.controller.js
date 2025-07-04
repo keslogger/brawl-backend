@@ -1,5 +1,6 @@
 const { User } = require('../../models');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken'); // Adicionado para gerar o token
 
 // Lista todos os utilizadores (exceto as suas senhas)
 exports.listarUsuarios = async (req, res) => {
@@ -66,5 +67,53 @@ exports.deletarUsuario = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: 'Erro ao apagar utilizador.' });
+  }
+};
+
+// --- FUNÇÃO DE LOGIN ADICIONADA ---
+/**
+ * @description Autentica um usuário e retorna um token JWT.
+ */
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // 1. Validação básica da entrada
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
+    }
+
+    // 2. Encontrar o usuário pelo email no banco de dados
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      // Usamos uma mensagem genérica por segurança, para não informar se o email existe ou não
+      return res.status(401).json({ error: 'Credenciais inválidas.' });
+    }
+
+    // 3. Comparar a senha fornecida com a senha criptografada no banco
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Credenciais inválidas.' });
+    }
+
+    // 4. Se as credenciais estiverem corretas, gerar o token JWT
+    const payload = {
+      id: user.id,
+      email: user.email,
+      role: user.role, // Incluir a 'role' no token é muito útil para autorização
+    };
+
+    const token = jwt.sign(
+      payload,
+      process.env.JWT_SECRET || 'seu_segredo_super_secreto',
+      { expiresIn: '1h' } // O token expira em 1 hora
+    );
+
+    // 5. Enviar o token para o cliente
+    res.status(200).json({ token });
+
+  } catch (error) {
+    console.error('Erro no processo de login:', error);
+    res.status(500).json({ error: 'Ocorreu um erro interno no servidor.' });
   }
 };
