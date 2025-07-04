@@ -17,7 +17,8 @@ const auditRoutes = require('./api/routes/audit.routes');
 const brawlerRoutes = require('./api/routes/brawler.routes.js');
 const userRoutes = require ('./api/routes/user.routes.js');
 const modoDeJogoRoutes = require('./api/routes/modoDeJogo.routes.js');
-const mapaRoutes = require('./api/routes/mapa.routes.js'); 
+const mapaRoutes = require('./api/routes/mapa.routes.js');
+const debugRoutes = require('./src/api/routes/debug.routes.js');
 
 
 const app = express();
@@ -99,6 +100,7 @@ app.use('/api', brawlerRoutes);
 app.use('/api', userRoutes);
 app.use('/api', modoDeJogoRoutes);
 app.use('/api', mapaRoutes);
+app.use('/api', debugRoutes);
 
 app.get('/', (req, res) => {
   res.send('Servidor do Draft Brawl Stars está no ar!');
