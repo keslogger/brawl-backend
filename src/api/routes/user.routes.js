@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { body } = require('express-validator');
 const userController = require('../controllers/user.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 const authorizeAdmin = require('../middleware/authorize.middleware');
@@ -95,7 +96,15 @@ router.get('/users', authMiddleware, authorizeAdmin, userController.listarUsuari
  *       '409':
  *         description: Conflito, o email já está em uso.
  */
-router.post('/users', authMiddleware, authorizeAdmin, userController.criarAdmin);
+router.post(
+  '/users',
+  authMiddleware,
+  authorizeAdmin,
+  // --- Validações ---
+  body('email', 'O email fornecido é inválido.').isEmail(),
+  body('password', 'A senha deve ter no mínimo 6 caracteres.').isLength({ min: 6 }),
+  userController.criarAdmin
+);
 
 /**
  * @swagger

@@ -1,5 +1,6 @@
 const { User } = require('../../models');
 const bcrypt = require('bcryptjs');
+const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken'); // Adicionado para gerar o token
 
 // Lista todos os utilizadores (exceto as suas senhas)
@@ -17,6 +18,12 @@ exports.listarUsuarios = async (req, res) => {
 // Cria um novo utilizador (com a função 'admin' por padrão)
 exports.criarAdmin = async (req, res) => {
   try {
+    // Verifica se houve erros de validação definidos na rota
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      // Se houver erros, retorna 400 com a lista de erros
+      return res.status(400).json({ errors: errors.array() });
+    }
     const { email, password } = req.body;
 
     if (!email || !password) {
