@@ -22,6 +22,7 @@
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.12.0",
     "pg-hstore": "^2.3.4",
+    "require-directory": "^2.1.1",
     "sequelize": "^6.37.3",
     "socket.io": "^4.7.5",
     "swagger-jsdoc": "^6.2.8",
