@@ -74,7 +74,9 @@ const alterarStatusSessao = async (req, res, novoStatus, acaoLog) => {
       const userId = req.user.id;
       auditService.logAction(userId, acaoLog, { sessaoDraftId: id });
       
-      req.io.emit('status_sessao_alterado', sessaoAtualizada);
+      const io = req.io;
+      const roomName = `sessao_${id}`;
+      io.to(roomName).emit('status_sessao_alterado', sessaoAtualizada);
 
       res.status(200).json(sessaoAtualizada);
     } else {
@@ -127,12 +129,81 @@ exports.registrarBans = async (req, res) => {
     sessao.status = 'pick_em_andamento';
     await sessao.save();
 
-    req.io.emit('status_sessao_alterado', sessao);
-    req.io.emit('bans_registrados', bansParaCriar);
+    const io = req.io;
+    const roomName = `sessao_${sessao.id}`;
+
+    // Notifica a sala sobre a mudança de status
+    io.to(roomName).emit('status_sessao_alterado', sessao);
+    // Notifica a sala sobre os bans registrados
+    io.to(roomName).emit('bans_registrados', bansParaCriar);
 
     res.status(201).json({ message: 'Todos os 6 bans foram registrados com sucesso. Fase de picks iniciada.' });
 
   } catch (error) {
+    console.error("Erro detalhado ao registrar bans:", error);
     res.status(400).json({ error: 'Erro ao registrar bans: ' + error.message });
+  }
+};
+
+// --- Função para Registrar um Pick (Implementação Completa) ---
+exports.registrarPick = async (req, res) => {
+  try {
+    const { sessaoDraftId } = req.params;
+    const { personagemEscolhido, equipeId } = req.body;
+    const io = req.io;
+    const roomName = `sessao_${sessaoDraftId}`;
+
+    if (!personagemEscolhido || !equipeId) {
+      return res.status(400).json({ error: 'É necessário fornecer o personagem e o ID da equipe.' });
+    }
+
+    const sessao = await SessaoDraft.findByPk(sessaoDraftId);
+    if (!sessao) {
+      return res.status(404).json({ error: 'Sessão de draft não encontrada.' });
+    }
+    if (sessao.status !== 'pick_em_andamento') {
+      return res.status(403).json({ error: 'A fase de picks não está ativa ou já foi concluída.' });
+    }
+
+    // Lógica para determinar a ordem dos picks (ABBAAB)
+    const picksAnteriores = await Escolha.count({ where: { sessaoDraftId, tipo: 'pick' } });
+    const pickOrder = [
+      sessao.equipeAzulId, // A
+      sessao.equipeVermelhaId, // B
+      sessao.equipeVermelhaId, // B
+      sessao.equipeAzulId, // A
+      sessao.equipeAzulId, // A
+      sessao.equipeVermelhaId, // B
+    ];
+
+    if (picksAnteriores >= pickOrder.length) {
+      return res.status(403).json({ error: 'A fase de picks já foi concluída.' });
+    }
+
+    const equipeDaVezId = pickOrder[picksAnteriores];
+    if (equipeDaVezId !== Number(equipeId)) {
+      return res.status(403).json({ error: `Não é o turno da equipe com ID ${equipeId}.` });
+    }
+
+    // Cria o novo pick
+    const novoPick = await Escolha.create({
+      personagemEscolhido,
+      tipo: 'pick',
+      equipeId,
+      sessaoDraftId: sessao.id,
+    });
+
+    // Se for o último pick, finaliza a sessão
+    if (picksAnteriores + 1 === pickOrder.length) {
+      sessao.status = 'finalizado';
+      await sessao.save();
+      io.to(roomName).emit('status_sessao_alterado', sessao);
+    }
+
+    io.to(roomName).emit('pick_registrado', novoPick);
+    res.status(201).json(novoPick);
+  } catch (error) {
+    console.error("Erro detalhado ao registrar pick:", error);
+    res.status(400).json({ error: 'Erro ao registrar pick: ' + error.message });
   }
 };

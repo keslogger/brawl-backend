@@ -94,6 +94,41 @@ router.post('/sessoes-draft/:sessaoDraftId/bans', authMiddleware, sessaoDraftCon
 
 /**
  * @swagger
+ * /sessoes-draft/{sessaoDraftId}/picks:
+ *   post:
+ *     summary: Registra um único pick (escolha) para uma equipe
+ *     tags: [Sessões de Draft]
+ *     description: Segue a ordem de picks ABBAAB. A API valida se é o turno da equipe correta.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: sessaoDraftId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               personagemEscolhido:
+ *                 type: string
+ *                 example: "Shelly"
+ *               equipeId:
+ *                 type: integer
+ *                 description: "ID da equipe que está fazendo a escolha."
+ *                 example: 1
+ *     responses:
+ *       '201':
+ *         description: Pick registrado com sucesso.
+ */
+router.post('/sessoes-draft/:sessaoDraftId/picks', authMiddleware, sessaoDraftController.registrarPick);
+
+/**
+ * @swagger
  * /sessoes-draft/{id}/iniciar:
  *   put:
  *     summary: (Admin) Altera o status de uma sessão para 'ban_em_andamento'
