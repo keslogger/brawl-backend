@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { body, param } = require('express-validator');
 const jogadorController = require('../controllers/jogador.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 
@@ -34,7 +35,6 @@ const authMiddleware = require('../middleware/auth.middleware');
  *             type: object
  *             required:
  *               - nome
- *               - instituicaoDeEnsino
  *               - equipeId
  *             properties:
  *               nome:
@@ -51,11 +51,20 @@ const authMiddleware = require('../middleware/auth.middleware');
  *       '201':
  *         description: Jogador criado com sucesso.
  *       '400':
- *         description: 'Dados inválidos (ex: nome, instituição ou equipeId faltando).'
+ *         description: 'Dados inválidos (ex: nome ou equipeId faltando, ou formato incorreto).'
  *       '404':
  *         description: Equipe não encontrada.
  */
-router.post('/jogadores', authMiddleware, jogadorController.criarJogador);
+router.post(
+  '/jogadores',
+  authMiddleware,
+  [
+    body('nome', 'O nome do jogador é obrigatório.').notEmpty().trim(),
+    body('equipeId', 'O ID da equipe deve ser um número inteiro válido.').notEmpty().isInt({ min: 1 }),
+    body('instituicaoDeEnsino', 'A instituição de ensino deve ser um texto.').optional().isString().trim()
+  ],
+  jogadorController.criarJogador
+);
 router.get('/jogadores', authMiddleware, jogadorController.listarJogadores);
 
 /**
@@ -76,10 +85,19 @@ router.get('/jogadores', authMiddleware, jogadorController.listarJogadores);
  *     responses:
  *       '200':
  *         description: Sucesso.
+ *       '400':
+ *         description: A tag do jogador é obrigatória.
  *       '500':
  *         description: Erro ao buscar dados na API externa.
  */
-router.get('/jogadores/buscar-api/:playerTag', authMiddleware, jogadorController.buscarJogadorNaAPI);
+router.get(
+  '/jogadores/buscar-api/:playerTag',
+  authMiddleware,
+  [
+    param('playerTag', 'A tag do jogador é obrigatória.').notEmpty().trim()
+  ],
+  jogadorController.buscarJogadorNaAPI
+);
 
 /**
  * @swagger
@@ -113,10 +131,18 @@ router.get('/jogadores/buscar-api/:playerTag', authMiddleware, jogadorController
  *       '201':
  *         description: Jogador importado com sucesso.
  *       '400':
- *         description: Instituição de ensino é obrigatória.
+ *         description: Dados de entrada inválidos.
  *       '500':
  *         description: Erro ao importar jogador.
  */
-router.post('/jogadores/importar/:playerTag', authMiddleware, jogadorController.importarJogador);
+router.post(
+  '/jogadores/importar/:playerTag',
+  authMiddleware,
+  [
+    param('playerTag', 'A tag do jogador é obrigatória.').notEmpty().trim(),
+    body('instituicaoDeEnsino', 'O nome da instituição de ensino é obrigatório.').notEmpty().trim()
+  ],
+  jogadorController.importarJogador
+);
 
 module.exports = router;
