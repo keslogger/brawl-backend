@@ -48,8 +48,16 @@ const authorizeAdmin = require('../middleware/authorize.middleware');
  *                   type: string
  *       '401':
  *         description: Credenciais inválidas.
+ *       '400':
+ *         description: Dados de entrada inválidos.
  */
-router.post('/auth/login', userController.login);
+router.post(
+    '/auth/login',
+    // --- Validações ---
+    body('email', 'O email fornecido é inválido.').isEmail(),
+    body('password', 'A senha é obrigatória.').notEmpty(),
+    userController.login
+);
 
 /**
  * @swagger
@@ -93,6 +101,8 @@ router.get('/users', authMiddleware, authorizeAdmin, userController.listarUsuari
  *     responses:
  *       '201':
  *         description: Usuário admin criado com sucesso.
+ *       '400':
+ *         description: Dados de entrada inválidos.
  *       '409':
  *         description: Conflito, o email já está em uso.
  */
@@ -101,8 +111,8 @@ router.post(
   authMiddleware,
   authorizeAdmin,
   // --- Validações ---
-  body('email', 'O email fornecido é inválido.').isEmail(),
-  body('password', 'A senha deve ter no mínimo 6 caracteres.').isLength({ min: 6 }),
+  body('email', 'O email é obrigatório e deve ser um formato válido.').notEmpty().isEmail(),
+  body('password', 'A senha é obrigatória e deve ter no mínimo 6 caracteres.').notEmpty().isLength({ min: 6 }),
   userController.criarAdmin
 );
 

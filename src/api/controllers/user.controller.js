@@ -1,7 +1,7 @@
 const { User } = require('../../models');
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
-const jwt = require('jsonwebtoken'); // Adicionado para gerar o token
+const jwt = require('jsonwebtoken');
 
 // Lista todos os utilizadores (exceto as suas senhas)
 exports.listarUsuarios = async (req, res) => {
@@ -25,10 +25,6 @@ exports.criarAdmin = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
-    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     
@@ -83,27 +79,28 @@ exports.deletarUsuario = async (req, res) => {
  */
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    // 1. Validação básica da entrada
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
+    // Verifica se houve erros de validação definidos na rota
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    // 2. Encontrar o usuário pelo email no banco de dados
+    const { email, password } = req.body;
+
+    // Encontrar o usuário pelo email no banco de dados
     const user = await User.findOne({ where: { email } });
     if (!user) {
       // Usamos uma mensagem genérica por segurança, para não informar se o email existe ou não
       return res.status(401).json({ error: 'Credenciais inválidas.' });
     }
 
-    // 3. Comparar a senha fornecida com a senha criptografada no banco
+    // Comparar a senha fornecida com a senha criptografada no banco
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Credenciais inválidas.' });
     }
 
-    // 4. Se as credenciais estiverem corretas, gerar o token JWT
+    // Se as credenciais estiverem corretas, gerar o token JWT
     const payload = {
       id: user.id,
       email: user.email,
@@ -116,7 +113,7 @@ exports.login = async (req, res) => {
       { expiresIn: '1h' } // O token expira em 1 hora
     );
 
-    // 5. Enviar o token para o cliente
+    // Enviar o token para o cliente
     res.status(200).json({ token });
 
   } catch (error) {
