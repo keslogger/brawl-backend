@@ -15,11 +15,25 @@ app.use(helmet());
 const server = http.createServer(app);
 
 // --- Configuração Centralizada de CORS ---
-// Define as regras de CORS que serão usadas tanto pela API HTTP quanto pelo Socket.IO.
+// Lista de domínios autorizados a acessar a API
+const allowedOrigins = [
+  'https://lighthearted-bavarois-27af8b.netlify.app',
+  'http://localhost:3000' // Adicione a porta que seu frontend usa localmente
+];
+
 const corsOptions = {
-  origin: '*', // Em produção, restrinja para o seu domínio: 'https://seu-frontend.com'
+  origin: function (origin, callback) {
+    // Permite requisições sem origin (ex: Postman, Insomnia, apps mobile)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'A política de CORS para este site não permite acesso a partir da origem especificada.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: ['Content-Type', 'Authorization'], // Permite os cabeçalhos que o cliente envia
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 // --- Middlewares Globais ---
