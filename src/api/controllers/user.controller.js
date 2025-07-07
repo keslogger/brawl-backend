@@ -110,7 +110,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       payload,
       process.env.JWT_SECRET || 'seu_segredo_super_secreto',
-      { expiresIn: '1h' } // O token expira em 1 hora
+      { expiresIn: '8h' } // O token expira em 1 hora
     );
 
     // Enviar o token para o cliente

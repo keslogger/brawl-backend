@@ -18,16 +18,22 @@ const server = http.createServer(app);
 // Lista de domínios autorizados a acessar a API
 const allowedOrigins = [
   'https://lighthearted-bavarois-27af8b.netlify.app',
-  'http://localhost:3000' // Adicione a porta que seu frontend usa localmente
+  'http://localhost:3000', // Padrão para Create React App
+  'http://localhost:5173', // Padrão para Vite
+  'http://localhost:8080'  // Padrão comum
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
+    // Loga a origem da requisição para depuração
+    console.log('CORS check: request from origin ->', origin);
+
     // Permite requisições sem origin (ex: Postman, Insomnia, apps mobile)
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'A política de CORS para este site não permite acesso a partir da origem especificada.';
+      const msg = `A política de CORS para este site não permite acesso a partir da origem: ${origin}`;
+      console.error(msg);
       return callback(new Error(msg), false);
     }
     return callback(null, true);
@@ -122,6 +128,17 @@ app.get('/', (req, res) => {
 
 // Middleware de tratamento de erros (deve ser o último middleware)
 app.use((err, req, res, next) => {
+  // Se o erro for de CORS, a resposta já foi enviada ou a conexão encerrada.
+  // Apenas logamos o erro se ele não for um erro de CORS que já tratamos.
+  if (res.headersSent) {
+    return next(err);
+  }
+  
+  // Verifica se é um erro de CORS que nós geramos
+  if (err.message.startsWith('A política de CORS')) {
+    return res.status(403).json({ error: err.message });
+  }
+
   console.error('ERRO NÃO TRATADO:', err.stack);
   res.status(500).send({ error: 'Algo deu errado no servidor!' });
 });
