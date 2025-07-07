@@ -17,7 +17,8 @@ const server = http.createServer(app);
 // --- Configuração Centralizada de CORS ---
 // Lista de domínios autorizados a acessar a API
 const allowedOrigins = [
-  'https://lighthearted-bavarois-27af8b.netlify.app',
+  'https://lighthearted-bavarois-27af8b.netlify.app', // Frontend do cliente
+  'https://brawl-backend.fly.dev',                     // A própria API (para permitir o Swagger UI)
   'http://localhost:3000', // Padrão para Create React App
   'http://localhost:5173', // Padrão para Vite
   'http://localhost:8080'  // Padrão comum
